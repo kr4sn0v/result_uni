@@ -1,81 +1,171 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, reactive, onMounted, watch } from 'vue'
 
-let todos = ref([
-  { id: 1, text: 'Изучить компоненты Vue.js', completed: false },
-  { id: 2, text: 'Создать TodoList приложение', completed: false },
-  { id: 3, text: 'Похвалить себя за отличную работу', completed: false },
+let basket = reactive([
+  {
+    id: 1,
+    name: 'Blue Flower Print Crop Top',
+    color: 'Yellow',
+    size: 'M',
+    price: 29.0,
+    quantity: 1,
+    imageUrl: '../public/crop-top.png',
+  },
+  {
+    id: 2,
+    name: 'Levender Hoodie',
+    color: 'Levender',
+    size: 'XXL',
+    price: 119.0,
+    quantity: 1,
+    imageUrl: '../public/hoodie.png',
+  },
+  {
+    id: 3,
+    name: 'Black Sweatshirt',
+    color: 'Black',
+    size: 'XXL',
+    price: 123.0,
+    quantity: 1,
+    imageUrl: '../public/sweatshirt.png',
+  },
 ])
 
-function completedTodo(todo) {
-  todo.completed = true
+const increaseItemQuantity = (item, basket) => {
+  item.quantity++
+  saveBasket(basket)
 }
 
-function removeTodo(id) {
-  todos.value = todos.value.filter((todo) => todo.id !== id)
+const decreaseItemQuantity = (item, basket) => {
+  item.quantity > 1 ? item.quantity-- : item.quantity
+  saveBasket(basket)
 }
 
-const uncompletedTodos = computed(() => {
-  const uncompletedTodosArr = todos.value.filter((todo) => todo.completed !== true)
-  return uncompletedTodosArr.length
+const removeItem = (index, basket) => {
+  basket.splice(index, 1)
+  saveBasket(basket)
+}
+
+const totalPrice = computed(() => {
+  let total = 0
+  basket.forEach((item) => {
+    total += item.price * item.quantity
+  })
+  return total
 })
 
-function clearCompleted() {
-  todos.value = todos.value.filter((todo) => todo.completed !== true)
-  return todos.value
+const totalTax = computed(() => {
+  return (totalPrice.value / 10).toFixed(2)
+})
+
+const saveBasket = (basket) => {
+  if (!basket || basket.length === 0) return
+  return localStorage.setItem('basket', JSON.stringify(basket))
 }
 
-function clearAll() {
-  todos.value = todos.value.filter((todo) => todo === true)
-  return todos.value
+const loadBasket = () => {
+  const savedBasketString = localStorage.getItem('basket')
+  return savedBasketString ? JSON.parse(savedBasketString) : basket
 }
+
+watch(basket, () => {
+  if (basket && basket.length) {
+    localStorage.setItem('basket', JSON.stringify(basket))
+  }
+})
+
+onMounted(() => {
+  const loaded = loadBasket()
+  if (loaded && loaded.length) {
+    basket.splice(0, basket.length)
+    basket.push(...loaded)
+  }
+})
 </script>
 
 <template>
-  <div class="container todo-app">
-    <h1 class="title">Todo List</h1>
+  <div class="container basket">
+    <table class="basket-table">
+      <!-- Header -->
+      <thead class="basket-table__header">
+        <tr>
+          <th>Product Details</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Subtotal</th>
+          <th>Action</th>
+        </tr>
+      </thead>
 
-    <div class="todo-app__main">
-      <ul class="todo-list">
-        <li
-          class="todo-list__item"
-          :class="{ 'todo-list__item--completed': todo.completed }"
-          v-for="todo in todos"
-          :key="todo.id"
-        >
-          <span class="todo-list__item-text">{{ todo.id }} {{ todo.text }}</span>
-          <button
-            class="btn btn--check"
-            :disabled="todo.completed"
-            @click="completedTodo(todo)"
-            aria-label="Завершить"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="15" height="22">
-              <path
-                d="M438.6 109.4c-12.5-12.5-32.8-12.5-45.3 0L160 320.7l-92.3-92.3c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l112 112c12.5 12.5 32.8 12.5 45.3 0l288-288c12.6-12.5 12.6-32.8 .1-45.3z"
-              />
-            </svg>
-          </button>
+      <!-- Items -->
+      <tbody class="basket-table__body">
+        <tr v-for="(item, index) in basket" :key="item.id">
+          <td>
+            <div class="basket-item">
+              <div class="basket-item__image">
+                <img :src="item.imageUrl" alt="Items image" />
+              </div>
+              <div class="basket-item__info">
+                <h2 class="basket-item__info-h2">{{ item.name }}</h2>
+                <p class="basket-item__info-p">Color: {{ item.color }}</p>
+                <p class="basket-item__info-p">Size: {{ item.size }}</p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <p class="basket-item__price">${{ item.price }}</p>
+          </td>
+          <td>
+            <div class="basket-item__quantity">
+              <button class="quantity-button" @click="decreaseItemQuantity(item, basket)">–</button>
+              <input type="number" :value="item.quantity" min="1" />
+              <button class="quantity-button" @click="increaseItemQuantity(item, basket)">+</button>
+            </div>
+          </td>
+          <td>
+            <p class="basket-item__price">${{ item.price * item.quantity }}</p>
+          </td>
+          <td>
+            <button class="btn btn-delete" @click="removeItem(index, basket)" aria-label="Удалить">
+              <svg
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
+                />
+              </svg>
+            </button>
+          </td>
+        </tr>
 
-          <button class="btn btn--delete" @click="removeTodo(todo.id)" aria-label="Удалить">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="15" height="22">
-              <path
-                d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"
-              />
-            </svg>
-          </button>
-        </li>
-      </ul>
-      <div v-if="todos.length === 0" class="todo-list__empty">
-        <p>Список задач пуст</p>
-      </div>
-    </div>
-
-    <div v-if="todos.length >= 1" class="todo-app__footer">
-      <p class="todo-app__footer-text">Осталось {{ uncompletedTodos }} задания(й)</p>
-      <button class="btn btn--clear" @click="clearCompleted()">Удалить завершенные</button>
-      <button class="btn btn--clear" @click="clearAll()">Очистить список</button>
-    </div>
+        <tr v-if="basket.length === 0">
+          <td colspan="5">
+            <p class="basket-table__empty">No items</p>
+          </td>
+        </tr>
+        <!-- Total -->
+        <tr>
+          <td colspan="5" v-if="basket.length > 0">
+            <div class="basket-table__summary">
+              <p class="basket-table__total">
+                Total <b>${{ totalPrice }}</b>
+              </p>
+              <p>Tax ${{ totalTax }}</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
