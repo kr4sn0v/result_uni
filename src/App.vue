@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, onMounted, watch } from 'vue'
+import { computed, reactive, onMounted } from 'vue'
 
 let basket = reactive([
   {
@@ -66,12 +66,6 @@ const loadBasket = () => {
   const savedBasketString = localStorage.getItem('basket')
   return savedBasketString ? JSON.parse(savedBasketString) : []
 }
-
-watch(basket, () => {
-  if (basket && basket.length) {
-    localStorage.setItem('basket', JSON.stringify(basket))
-  }
-})
 
 onMounted(() => {
   const loaded = loadBasket()
