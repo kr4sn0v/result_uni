@@ -59,13 +59,12 @@ const totalTax = computed(() => {
 })
 
 const saveBasket = (basket) => {
-  if (!basket || basket.length === 0) return
   return localStorage.setItem('basket', JSON.stringify(basket))
 }
 
 const loadBasket = () => {
   const savedBasketString = localStorage.getItem('basket')
-  return savedBasketString ? JSON.parse(savedBasketString) : basket
+  return savedBasketString ? JSON.parse(savedBasketString) : []
 }
 
 watch(basket, () => {
