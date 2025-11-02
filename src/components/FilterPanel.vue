@@ -1,8 +1,10 @@
 <script setup>
-import { inject } from 'vue'
-
-const filterOptions = inject('filterOptions')
-const setFilter = inject('setFilter')
+defineProps({
+  filterOptions: {
+    type: Array,
+    required: true,
+  },
+})
 </script>
 
 <template>
@@ -11,7 +13,7 @@ const setFilter = inject('setFilter')
       v-for="filter in filterOptions"
       class="btn btn--filter"
       :class="{ 'btn--active': filter.active }"
-      @click="setFilter(filter.value)"
+      @click="$emit('set-filter', filter.value)"
       :key="filter.value"
     >
       {{ filter.label }}

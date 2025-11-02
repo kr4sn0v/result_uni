@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed, provide } from 'vue'
+import { reactive, computed } from 'vue'
 import FilterPanel from './components/FilterPanel.vue'
 import ReviewList from './components/ReviewList.vue'
 
@@ -42,12 +42,6 @@ const setFilter = (value) => {
     f.active = f.value === value
   })
 }
-
-provide('filteredReviews', filteredReviews)
-provide('filterOptions', filterOptions)
-provide('toggleLike', toggleLike)
-provide('removeReview', removeReview)
-provide('setFilter', setFilter)
 </script>
 
 <template>
@@ -55,10 +49,10 @@ provide('setFilter', setFilter)
     <h1 class="reviews__title">Отзывы</h1>
 
     <!-- Панель фильтров -->
-    <FilterPanel :reviews />
+    <FilterPanel :filter-options="filterOptions" @set-filter="setFilter" />
 
     <!-- Список отзывов -->
-    <ReviewList />
+    <ReviewList :reviews="filteredReviews" @toggle-like="toggleLike" @remove="removeReview" />
   </div>
 </template>
 
