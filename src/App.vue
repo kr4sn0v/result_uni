@@ -1,165 +1,77 @@
 <script setup>
-import { computed, reactive, onMounted } from 'vue'
+import { reactive, computed, provide } from 'vue'
+import FilterPanel from './components/FilterPanel.vue'
+import ReviewList from './components/ReviewList.vue'
 
-let basket = reactive([
-  {
-    id: 1,
-    name: 'Blue Flower Print Crop Top',
-    color: 'Yellow',
-    size: 'M',
-    price: 29.0,
-    quantity: 1,
-    imageUrl: '../public/crop-top.png',
-  },
-  {
-    id: 2,
-    name: 'Levender Hoodie',
-    color: 'Levender',
-    size: 'XXL',
-    price: 119.0,
-    quantity: 1,
-    imageUrl: '../public/hoodie.png',
-  },
-  {
-    id: 3,
-    name: 'Black Sweatshirt',
-    color: 'Black',
-    size: 'XXL',
-    price: 123.0,
-    quantity: 1,
-    imageUrl: '../public/sweatshirt.png',
-  },
+// Отзывы с рейтингом
+const reviews = reactive([
+  { id: 1, author: 'Иван Иванов', text: 'Отличный сервис!', liked: true, rating: 5 },
+  { id: 2, author: 'Мария Смирнова', text: 'Довольна качеством товара.', liked: false, rating: 4 },
+  { id: 3, author: 'Дмитрий Кузнецов', text: 'Быстрая доставка.', liked: true, rating: 3 },
+  { id: 4, author: 'Аноним', text: 'Такое себе', liked: false, rating: 2 },
 ])
 
-const increaseItemQuantity = (item, basket) => {
-  item.quantity++
-  saveBasket(basket)
+const filterOptions = reactive([
+  { value: 'all', label: 'Все', active: true },
+  { value: 'liked', label: '❤️ Понравившиеся', active: false },
+  { value: 'notLiked', label: '👎 Без лайка', active: false },
+  { value: 'highRating', label: '⭐ 4 и выше', active: false },
+])
+
+const filter = computed(() => {
+  return filterOptions.find((f) => f.active).value
+})
+
+const filteredReviews = computed(() => {
+  if (filter.value === 'liked') return reviews.filter((r) => r.liked)
+  if (filter.value === 'notLiked') return reviews.filter((r) => !r.liked)
+  if (filter.value === 'highRating') return reviews.filter((r) => r.rating >= 4)
+  return reviews
+})
+
+const toggleLike = (review) => {
+  review.liked = !review.liked
 }
 
-const decreaseItemQuantity = (item, basket) => {
-  item.quantity > 1 ? item.quantity-- : item.quantity
-  saveBasket(basket)
+const removeReview = (index) => {
+  reviews.splice(index, 1)
 }
 
-const removeItem = (index, basket) => {
-  basket.splice(index, 1)
-  saveBasket(basket)
-}
-
-const totalPrice = computed(() => {
-  let total = 0
-  basket.forEach((item) => {
-    total += item.price * item.quantity
+const setFilter = (value) => {
+  filterOptions.forEach((f) => {
+    f.active = f.value === value
   })
-  return total
-})
-
-const totalTax = computed(() => {
-  return (totalPrice.value / 10).toFixed(2)
-})
-
-const saveBasket = (basket) => {
-  return localStorage.setItem('basket', JSON.stringify(basket))
 }
 
-const loadBasket = () => {
-  const savedBasketString = localStorage.getItem('basket')
-  return savedBasketString ? JSON.parse(savedBasketString) : []
-}
-
-onMounted(() => {
-  const loaded = loadBasket()
-  if (loaded && loaded.length) {
-    basket.splice(0, basket.length)
-    basket.push(...loaded)
-  }
-})
+provide('filteredReviews', filteredReviews)
+provide('filterOptions', filterOptions)
+provide('toggleLike', toggleLike)
+provide('removeReview', removeReview)
+provide('setFilter', setFilter)
 </script>
 
 <template>
-  <div class="container basket">
-    <table class="basket-table">
-      <!-- Header -->
-      <thead class="basket-table__header">
-        <tr>
-          <th>Product Details</th>
-          <th>Price</th>
-          <th>Quantity</th>
-          <th>Subtotal</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+  <div class="container reviews">
+    <h1 class="reviews__title">Отзывы</h1>
 
-      <!-- Items -->
-      <tbody class="basket-table__body">
-        <tr v-for="(item, index) in basket" :key="item.id">
-          <td>
-            <div class="basket-item">
-              <div class="basket-item__image">
-                <img :src="item.imageUrl" alt="Items image" />
-              </div>
-              <div class="basket-item__info">
-                <h2 class="basket-item__info-h2">{{ item.name }}</h2>
-                <p class="basket-item__info-p">Color: {{ item.color }}</p>
-                <p class="basket-item__info-p">Size: {{ item.size }}</p>
-              </div>
-            </div>
-          </td>
-          <td>
-            <p class="basket-item__price">${{ item.price }}</p>
-          </td>
-          <td>
-            <div class="basket-item__quantity">
-              <button class="quantity-button" @click="decreaseItemQuantity(item, basket)">–</button>
-              <input type="number" :value="item.quantity" min="1" />
-              <button class="quantity-button" @click="increaseItemQuantity(item, basket)">+</button>
-            </div>
-          </td>
-          <td>
-            <p class="basket-item__price">${{ item.price * item.quantity }}</p>
-          </td>
-          <td>
-            <button class="btn btn-delete" @click="removeItem(index, basket)" aria-label="Удалить">
-              <svg
-                class="w-6 h-6 text-gray-800 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"
-                />
-              </svg>
-            </button>
-          </td>
-        </tr>
+    <!-- Панель фильтров -->
+    <FilterPanel :reviews />
 
-        <tr v-if="basket.length === 0">
-          <td colspan="5">
-            <p class="basket-table__empty">No items</p>
-          </td>
-        </tr>
-        <!-- Total -->
-        <tr>
-          <td colspan="5" v-if="basket.length > 0">
-            <div class="basket-table__summary">
-              <p class="basket-table__total">
-                Total <b>${{ totalPrice }}</b>
-              </p>
-              <p>Tax ${{ totalTax }}</p>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Список отзывов -->
+    <ReviewList />
   </div>
 </template>
 
-<style scoped src="./App.css"></style>
+<style scoped>
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: sans-serif;
+}
+
+.reviews__title {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+</style>
