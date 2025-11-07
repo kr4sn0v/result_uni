@@ -3,7 +3,7 @@
     <h1 class="title">Todo List</h1>
     <TodoForm @add-todo="addTodo" />
 
-    <TodoList :todos="todos" @remove-todo="removeTodo" />
+    <TodoList :todos="todos" @remove-todo="removeTodo" @complete-todo="completeTodo" />
 
     <TodoFooter
       v-if="todos.length"
@@ -66,10 +66,19 @@ const clearCompleted = () => {
   }
 }
 
+const completeTodo = (todo) => {
+  fetchData(`http://localhost:3000/todos/${todo.id}`, {
+    method: 'PATCH',
+    body: { completed: !todo.completed },
+  }).then(() => {
+    fetchTodos()
+  })
+}
+
 const clearAll = async () => {
   for (let i = todos.length - 1; i >= 0; i--) {
     if (todos[i]) {
-      removeTodo(todos[i].ifd)
+      removeTodo(todos[i].id)
     }
   }
 }
