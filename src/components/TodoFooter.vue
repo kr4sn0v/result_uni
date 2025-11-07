@@ -7,14 +7,12 @@
 </template>
 
 <script setup>
-defineProps(
-  {
-    remaining: {
-      type: Number,
-      required: true,
-    },
-  }
-)
+defineProps({
+  remaining: {
+    type: Number,
+    required: true,
+  },
+})
 </script>
 
 <style>

@@ -2,10 +2,10 @@
   <div class="todo-app__main">
     <ul class="todo-list">
       <TodoListItem
-        v-for="(todo, index) in todos"
+        v-for="todo in todos"
         :key="todo.id"
         v-bind="todo"
-        @remove="() => $emit('remove-todo', index)"
+        @remove="() => $emit('remove-todo', todo.id)"
         @complete.once="() => (todo.completed = !todo.completed)"
       />
     </ul>
@@ -18,14 +18,12 @@
 <script setup>
 import TodoListItem from './TodoListItem.vue'
 
-defineProps(
-  {
-    todos: {
-      type: Array,
-      required: true,
-    },
-  }
-)
+defineProps({
+  todos: {
+    type: Array,
+    required: true,
+  },
+})
 </script>
 
 <style>
