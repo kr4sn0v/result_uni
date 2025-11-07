@@ -9,7 +9,7 @@ const cities = ref([])
 
 const registrationSuccess = ref(false)
 
-const isLoading = ref(false)
+const isLoading = ref(true)
 const error = ref('')
 
 const fetchCities = async () => {
@@ -17,9 +17,10 @@ const fetchCities = async () => {
     const citiesCollection = collection(db, 'cities')
     const citiesSnapshot = await getDocs(citiesCollection)
     cities.value = citiesSnapshot.docs.map((doc) => doc.data())
+  } catch (err) {
+    error.value = err.message
+  } finally {
     isLoading.value = false
-  } catch {
-    error.value = 'Ошибка получения городов'
   }
 }
 
@@ -35,7 +36,7 @@ const toggleConfirmPasswordVisibility = () => {
 
 const register = async (values) => {
   try {
-    console.log('Registration data:', JSON.stringify(values))
+    isLoading.value = true
     const newUser = {
       id: Date.now().toString(),
       firstname: values.firstname,
@@ -48,15 +49,19 @@ const register = async (values) => {
     }
     const usersCollection = collection(db, 'users')
     const usersSnapshot = await getDocs(usersCollection)
-    if (usersSnapshot.docs.find((doc) => doc.data().email === newUser.email)) {
+    const exitingUser = usersSnapshot.docs.find((doc) => doc.data().email === newUser.email)
+    if (exitingUser) {
       throw new Error('Данный email уже используется другим пользователем')
+    } else {
+      const userRef = doc(db, 'users', newUser.id)
+      setDoc(userRef, newUser).then(() => {
+        registrationSuccess.value = true
+      })
     }
-    const userRef = doc(db, 'users', newUser.id)
-    setDoc(userRef, newUser).then(() => (isLoading.value = true))
-    registrationSuccess.value = true
-    isLoading.value = false
   } catch (err) {
     error.value = err.message
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -85,7 +90,6 @@ const schema = yup.object({
 })
 
 onMounted(() => {
-  isLoading.value = true
   fetchCities()
 })
 </script>
