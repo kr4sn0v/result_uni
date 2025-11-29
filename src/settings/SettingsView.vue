@@ -7,7 +7,7 @@
     </div>
     <div class="settings-panel">
       <router-view v-slot="{ Component }">
-        <transition name="fade">
+        <transition name="fade" mode="out-in">
           <Component :is="Component" />
         </transition>
       </router-view>

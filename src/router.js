@@ -5,15 +5,16 @@ const routes = [
   {
     path: '/tasks',
     component: () => import('./tasks/TasksView.vue'),
-    meta: {
-      transition: 'slide-fade',
-    },
   },
-  { path: '/tasks/:id', component: () => import('./tasks/TaskDetailsView.vue') },
+  { path: '/tasks/:id', component: () => import('./tasks/TaskDetailsView.vue'), props: true },
   {
     path: '/settings',
     component: () => import('./settings/SettingsView.vue'),
     children: [
+      {
+        path: '',
+        redirect: '/settings/profile',
+      },
       {
         path: 'profile',
         component: () => import('./settings/ProfileView.vue'),

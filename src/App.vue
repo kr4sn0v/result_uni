@@ -1,29 +1,21 @@
 <template>
-  <div id="app">
-    <div class="wrapper">
-      <nav class="navigation">
-        <div class="navigation-left">
-          <router-link to="/dashboard">Dashboard</router-link>
-          <router-link to="/tasks">Tasks</router-link>
-          <router-link to="/settings/profile">Settings</router-link>
-        </div>
-      </nav>
-      <main class="container">
-        <router-view v-slot="{ Component }">
-          <transition :name="route.meta.transition || 'fade'">
-            <Component :is="Component" />
-          </transition>
-        </router-view>
-      </main>
-    </div>
+  <div class="wrapper">
+    <nav class="navigation">
+      <div class="navigation-left">
+        <router-link to="/">Dashboard</router-link>
+        <router-link to="/tasks">Tasks</router-link>
+        <router-link to="/settings/profile">Settings</router-link>
+      </div>
+    </nav>
+    <main class="container">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <Component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
   </div>
 </template>
-
-<script setup>
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-</script>
 
 <style scoped>
 body {
