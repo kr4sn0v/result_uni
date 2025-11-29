@@ -8,9 +8,7 @@
       </div>
       <div class="navigation-right">
         <router-link v-if="isLoggedIn === false" to="/login">Login</router-link>
-        <button v-if="isLoggedIn === true" @click="(logout(), route())" class="btn-logout">
-          Logout
-        </button>
+        <button v-if="isLoggedIn === true" @click="logout" class="btn-logout">Logout</button>
       </div>
     </nav>
     <main class="container">
@@ -25,12 +23,6 @@
 
 <script setup>
 import { isLoggedIn, logout } from './auth/index.js'
-
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const route = () => router.push('/login')
 </script>
 
 <style scoped>

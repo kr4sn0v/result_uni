@@ -52,9 +52,11 @@ const router = createRouter({
   linkExactActiveClass: 'router-link--active',
 })
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && isLoggedIn.value === false) {
-    return { name: 'Login' }
+    next('/login')
+  } else {
+    next()
   }
 })
 
