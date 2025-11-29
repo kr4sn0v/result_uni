@@ -6,6 +6,12 @@
         <router-link to="/tasks">Tasks</router-link>
         <router-link to="/settings/profile">Settings</router-link>
       </div>
+      <div class="navigation-right">
+        <router-link v-if="isLoggedIn === false" to="/login">Login</router-link>
+        <button v-if="isLoggedIn === true" @click="(logout(), route())" class="btn-logout">
+          Logout
+        </button>
+      </div>
     </nav>
     <main class="container">
       <router-view v-slot="{ Component }">
@@ -16,6 +22,16 @@
     </main>
   </div>
 </template>
+
+<script setup>
+import { isLoggedIn, logout } from './auth/index.js'
+
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const route = () => router.push('/login')
+</script>
 
 <style scoped>
 body {
@@ -58,6 +74,19 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.btn-logout {
+  background: #ff4d4f;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  line-height: normal;
+  font-size: 0.8rem;
 }
 
 .navigation a:not(.btn-logout) {
